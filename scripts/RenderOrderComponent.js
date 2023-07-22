@@ -13,53 +13,53 @@ const { Assets, EditorHelpers, ProjectHandler, MenuInputs }=window.DigitalBacon;
 const { AssetEntity, Component } = Assets;
 const { ComponentHelper, EditorHelperFactory } = EditorHelpers;
 
-export default class PublishComponent extends Component {
+export default class RenderOrderComponent extends Component {
     constructor(params = {}) {
-        params['assetId'] = PublishComponent.assetId;
+        params['assetId'] = RenderOrderComponent.assetId;
         super(params);
-        this._topic = params['topic'] || '';
+        this._renderOrder = params['renderOrder'] || 0;
     }
 
     _getDefaultName() {
-        return PublishComponent.assetName;
+        return RenderOrderComponent.assetName;
     }
 
     exportParams() {
         let params = super.exportParams();
-        params['topic'] = this._topic;
+        params['renderOrder'] = this._renderOrder;
         return params;
     }
 
-    getTopic() {
-        return this._topic;
+    getRenderOrder() {
+        return this._renderOrder;
     }
 
     supports(asset) {
         return asset instanceof AssetEntity;
     }
 
-    setTopic(topic) {
-        this._topic = topic;
+    setRenderOrder(renderOrder) {
+        this._renderOrder = renderOrder;
     }
 
-    static assetId = '2a310a93-3f00-465a-862f-2bf8de118984';
-    static assetName = 'Publish Component';
+    static assetId = 'f4e5b6a5-3712-4f0b-883a-197c26debf24';
+    static assetName = 'Render Order Component';
 }
 
-ProjectHandler.registerAsset(PublishComponent);
+ProjectHandler.registerAsset(RenderOrderComponent);
 
 if(EditorHelpers) {
-    class PublishComponentHelper extends ComponentHelper {
+    class RenderOrderComponentHelper extends ComponentHelper {
         constructor(asset) {
             super(asset);
         }
 
         static fields = [
-            { "parameter": "topic", "name": "Event",
-                "type": MenuInputs.TextInput },
+            { "parameter": "renderOrder", "name": "Render Order",
+                "type": MenuInputs.NumberInput },
         ];
     }
 
-    EditorHelperFactory.registerEditorHelper(PublishComponentHelper,
-        PublishComponent);
+    EditorHelperFactory.registerEditorHelper(RenderOrderComponentHelper,
+        RenderOrderComponent);
 }

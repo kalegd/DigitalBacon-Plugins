@@ -13,53 +13,53 @@ const { Assets, EditorHelpers, ProjectHandler, MenuInputs }=window.DigitalBacon;
 const { AssetEntity, Component } = Assets;
 const { ComponentHelper, EditorHelperFactory } = EditorHelpers;
 
-export default class PublishComponent extends Component {
+export default class FrustumCulledComponent extends Component {
     constructor(params = {}) {
-        params['assetId'] = PublishComponent.assetId;
+        params['assetId'] = FrustumCulledComponent.assetId;
         super(params);
-        this._topic = params['topic'] || '';
+        this._frustumCulled = params['frustumCulled'] || false;
     }
 
     _getDefaultName() {
-        return PublishComponent.assetName;
+        return FrustumCulledComponent.assetName;
     }
 
     exportParams() {
         let params = super.exportParams();
-        params['topic'] = this._topic;
+        params['frustumCulled'] = this._frustumCulled;
         return params;
     }
 
-    getTopic() {
-        return this._topic;
+    getFrustumCulled() {
+        return this._frustumCulled;
     }
 
     supports(asset) {
         return asset instanceof AssetEntity;
     }
 
-    setTopic(topic) {
-        this._topic = topic;
+    setFrustumCulled(frustumCulled) {
+        this._frustumCulled = frustumCulled;
     }
 
-    static assetId = '2a310a93-3f00-465a-862f-2bf8de118984';
-    static assetName = 'Publish Component';
+    static assetId = 'ab72b23e-47c6-4406-b184-9d9a175394b0';
+    static assetName = 'Frustum Culled Component';
 }
 
-ProjectHandler.registerAsset(PublishComponent);
+ProjectHandler.registerAsset(FrustumCulledComponent);
 
 if(EditorHelpers) {
-    class PublishComponentHelper extends ComponentHelper {
+    class FrustumCulledComponentHelper extends ComponentHelper {
         constructor(asset) {
             super(asset);
         }
 
         static fields = [
-            { "parameter": "topic", "name": "Event",
-                "type": MenuInputs.TextInput },
+            { "parameter": "frustumCulled", "name": "Frustum Culled",
+                "type": MenuInputs.CheckboxInput },
         ];
     }
 
-    EditorHelperFactory.registerEditorHelper(PublishComponentHelper,
-        PublishComponent);
+    EditorHelperFactory.registerEditorHelper(FrustumCulledComponentHelper,
+        FrustumCulledComponent);
 }

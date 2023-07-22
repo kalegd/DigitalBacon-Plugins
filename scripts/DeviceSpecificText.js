@@ -24,6 +24,7 @@ const FONT_TEXTURE = 'https://cdn.jsdelivr.net/npm/msdf-fonts/build/custom/digit
 
 export default class DeviceSpecificText extends CustomAssetEntity {
     constructor(params = {}) {
+        params['assetId'] = DeviceSpecificText.assetId;
         super(params);
         this._backgroundColor = new THREE.Color(
             numberOr(params['backgroundColor'],  0x000000));
