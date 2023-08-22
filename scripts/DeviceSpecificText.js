@@ -83,11 +83,6 @@ export default class DeviceSpecificText extends CustomAssetEntity {
         }
     }
 
-    clone(visualEditOverride) {
-        let params = this._fetchCloneParams(visualEditOverride);
-        return ProjectHandler.addNewAsset(this._assetId, params);
-    }
-
     exportParams() {
         let params = super.exportParams();
         params['backgroundColor'] = this._backgroundColor.getHex();
