@@ -69,6 +69,7 @@ class Reflector extends Mesh {
 		const q = new Vector4();
 
 		const textureMatrix = new Matrix4();
+        this._textureMatrix = textureMatrix;
 		const virtualCamera = this.camera;
 
 		const renderTarget = new WebGLRenderTarget( textureWidth, textureHeight, { samples: multisample, type: HalfFloatType } );
@@ -707,6 +708,7 @@ class Water extends Mesh {
 		this.material.uniforms[ 'color' ].value = color;
 		this.material.uniforms[ 'reflectivity' ].value = reflectivity;
 		this.material.uniforms[ 'textureMatrix' ].value = textureMatrix;
+		this.material.uniforms[ 'reflectionTextureMatrix' ].value = reflector._textureMatrix;
 
 		// inital values
 
@@ -819,6 +821,11 @@ Water.WaterShader = {
 			value: null
 		},
 
+		'reflectionTextureMatrix': {
+			type: 'm4',
+			value: null
+		},
+
 		'config': {
 			type: 'v4',
 			value: new Vector4()
@@ -833,8 +840,10 @@ Water.WaterShader = {
 		#include <logdepthbuf_pars_vertex>
 
 		uniform mat4 textureMatrix;
+		uniform mat4 reflectionTextureMatrix;
 
 		varying vec4 vCoord;
+		varying vec4 vReflectionCoord;
 		varying vec2 vUv;
 		varying vec3 vToEye;
 
@@ -842,6 +851,7 @@ Water.WaterShader = {
 
 			vUv = uv;
 			vCoord = textureMatrix * vec4( position, 1.0 );
+			vReflectionCoord = reflectionTextureMatrix * vec4( position, 1.0 );
 
 			vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
 			vToEye = cameraPosition - worldPosition.xyz;
@@ -876,6 +886,7 @@ Water.WaterShader = {
 		uniform vec4 config;
 
 		varying vec4 vCoord;
+		varying vec4 vReflectionCoord;
 		varying vec2 vUv;
 		varying vec3 vToEye;
 
@@ -918,7 +929,7 @@ Water.WaterShader = {
 			vec3 coord = vCoord.xyz / vCoord.w;
 			vec2 uv = coord.xy + coord.z * normal.xz * 0.05;
 
-			vec4 reflectColor = texture2D( tReflectionMap, vec2( 1.0 - uv.x, uv.y ) );
+			vec4 reflectColor = textureProj( tReflectionMap, vReflectionCoord );
 			vec4 refractColor = texture2D( tRefractionMap, uv );
 
 			// multiply water color with the mix of both textures
