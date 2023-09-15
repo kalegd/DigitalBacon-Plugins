@@ -19,22 +19,23 @@ const AUDIO_QUANTITY = 3;
 const BLAST_FIRED_TOPIC = 'KiBlastSystem:BlastFired';
 const COMPONENT_ASSET_ID = '38829fa8-c900-41e1-987c-69f3622be707';
 
-export default class MegaBusterSystem extends System {
+export default class KiBlastSystem extends System {
     constructor(params = {}) {
-        params['assetId'] = MegaBusterSystem.assetId;
+        params['assetId'] = KiBlastSystem.assetId;
         super(params);
         this._actions = {};
-        this._megabusters = {};
         this._blastAssets = {};
         this._blasts = {};
         this._publishForNewPeers = {};
         this._onPartyJoined = {};
         this._audioAssets = [];
         this._audioIndex = 0;
+        if(deviceType == 'XR')
+            this._checkBlastFired = this._checkBlastFiredXR;
     }
 
     _getDefaultName() {
-        return MegaBusterSystem.assetName;
+        return KiBlastSystem.assetName;
     }
 
     getDescription() {
@@ -59,17 +60,20 @@ export default class MegaBusterSystem extends System {
         });
         PartyMessageHelper.registerBlockableHandler(BLAST_FIRED_TOPIC,
             (p, m) => { this._handleBlastFired(p, m); });
-    }
-
-    _clearMegabusters(sourceId) {
-        for(let id in this._megabusters) {
-            let megabuster = this._megabusters[id];
-            if(sourceId && sourceId != megabuster.sourceId) continue;
-            this._deleteMegabuster(this._megabusters[id]);
-        }
-        if(deviceType != 'XR') {
-            if(this._myMegabusters.size == 0)
-                UserController.getAvatar().hasMegaBuster = false;
+        if(deviceType != 'XR' && !this._alreadyCreatedFireButton) {
+            this._alreadyCreatedFireButton = true;
+            this._fireButtonPressed = false;
+            this._wasButtonPressed = false;
+            let fireButton = InputHandler.addExtraControlsButton(
+                'fire-button', 'FIRE');
+            fireButton.addEventListener('touchstart',
+                () => { this._fireButtonPressed = true; });
+            fireButton.addEventListener('mousedown',
+                () => { this._fireButtonPressed = true; });
+            fireButton.addEventListener('touchend',
+                () => { this._fireButtonPressed = false; });
+            fireButton.addEventListener('mouseup',
+                () => { this._fireButtonPressed = false; });
         }
     }
 
@@ -96,49 +100,6 @@ export default class MegaBusterSystem extends System {
         }
     }
 
-    _onPartyEnded() {
-        for(let id in this._megabusters) {
-            let megabuster = this._megabusters[id];
-            if(this._myMegabusters.has(megabuster)) return;
-            this._deleteMegabuster(this._megabusters[id]);
-        }
-    }
-
-    _addPointerAction(instance, componentId) {
-        let action = instance.addPointerAction(() => {
-            let avatar = UserController.getAvatar();
-            let megabuster = this._createMegabuster(instance, componentId,
-                avatar);
-            if(!megabuster) return;
-            megabuster.isTriggerPressed = () => {
-                if(deviceType == 'POINTER') {
-                    return InputHandler.isPointerPressed();
-                } else {
-                    return this._mobileFirePressed;
-                }
-            }
-            if(deviceType == 'MOBILE' && !this._alreadyCreatedFireButton) {
-                this._alreadyCreatedFireButton = true;
-                let fireButton = InputHandler.addExtraControlsButton(
-                    'fire-button', 'FIRE');
-                fireButton.addEventListener('touchstart',
-                    () => { this._mobileFirePressed = true; });
-                fireButton.addEventListener('touchend',
-                    () => { this._mobileFirePressed = false; });
-            }
-        }, null, 2);
-        this._actions[instance.getId()] = action;
-    }
-
-    _handleMegabusterOwned(peer, message) {
-        let instance = ProjectHandler.getSessionAsset(message.id);
-        let controller = ProjectHandler.getSessionAsset(message.controllerId);
-        this._megabusters[message.id] = instance;
-        controller.addDeleteCallback(this._id, () => {
-            if(instance.getObject().parent) this._deleteMegabuster(instance);
-        });
-    }
-
     _handleBlastFired(peer, message) {
         let blast = ProjectHandler.getSessionAsset(message.id);
         blast.firedAt = message.firedAt;
@@ -156,6 +117,30 @@ export default class MegaBusterSystem extends System {
     }
 
     _checkBlastFired() {
+        if(this._wasButtonPressed != this._fireButtonPressed) {
+            this._wasButtonPressed = this._fireButtonPressed;
+            if(this._fireButtonPressed) {
+                if(!this._blastAssets['BLAST']) return;
+                this._blast = this._blastAssets['BLAST'].clone();
+                this._blast.setPosition([0, -0.2, -0.2]);
+                this._blast.addTo(UserController.getAvatar());
+            } else if(this._blast) {
+                Scene.attach(this._blast);
+                let velocity = new THREE.Vector3(0, -0.2, 0);
+                UserController.getAvatar().getObject().localToWorld(velocity)
+                    .subVectors(this._blast.getObject().position, velocity)
+                    .setLength(20);
+                this._blast.velocity = velocity;
+                this._blast.firedAt = Date.now();
+                this._blasts[this._blast.getId()] = this._blast;
+                this._playAudioFor(this._blast);
+                this._publish(this._blast);
+                this._blast = null;
+            }
+        }
+    }
+
+    _checkBlastFiredXR() {
         for(let controller of UserController.getXRDevices()) {
             if(!controller.getHandedness || !controller.isButtonPressed)
                 continue;
@@ -200,9 +185,9 @@ export default class MegaBusterSystem extends System {
         });
         let velocityTotal = Math.hypot(...velocity);
         blast.velocity = new THREE.Vector3();
-        if(velocityTotal > 10) {
+        if(velocityTotal > 5) {
             blast.velocity.fromArray(velocity);
-            blast.velocity.setLength(velocityTotal * 2);
+            blast.velocity.setLength(velocityTotal * 4);
         } else {
             blast.velocity.copy((controller.getPalmDirection)
                 ? controller.getPalmDirection()
@@ -220,6 +205,7 @@ export default class MegaBusterSystem extends System {
         let audio = this._audioAssets[this._audioIndex];
         this._audioIndex = (this._audioIndex + 1) % AUDIO_QUANTITY;
         blast.getWorldPosition(audio.getObject().position);
+        audio.attachTo(Scene);
         audio.play(0);
     }
 
@@ -255,4 +241,4 @@ export default class MegaBusterSystem extends System {
     static assetName = 'Ki Blast System';
 }
 
-ProjectHandler.registerAsset(MegaBusterSystem);
+ProjectHandler.registerAsset(KiBlastSystem);

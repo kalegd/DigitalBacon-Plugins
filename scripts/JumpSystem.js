@@ -34,7 +34,6 @@ export default class JumpSystem extends System {
 
     _addSubscriptions() {
         SettingsHandler.setUserSetting('Enable Flying', false);
-        SettingsHandler.setEditorSetting('Enable Flying', false);
         PubSub.subscribe(this._id, 'SETTINGS_UPDATED', (message) => {
             SettingsHandler.setUserSetting('Enable Flying', false, true);
         });

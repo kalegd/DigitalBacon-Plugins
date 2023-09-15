@@ -51,19 +51,20 @@ export default class MegaBusterSystem extends System {
             } else {
                 this._addPointerAction(instance, message.componentId);
             }
+            instance.removeComponent(message.componentId);
         });
-        this._listenForComponentDetached(COMPONENT_ASSET_ID, (message) => {
-            let instance = ProjectHandler.getSessionAsset(message.id);
-            let action = this._actions[message.id];
-            if(!action) return;
-            if(deviceType == 'XR') {
-                instance.removeGripAction(action.id);
-            } else {
-                instance.removePointerAction(action.id);
-            }
-            delete this._actions[message.id];
-            this._clearMegabusters(message.id);
-        });
+        //this._listenForComponentDetached(COMPONENT_ASSET_ID, (message) => {
+        //    let instance = ProjectHandler.getSessionAsset(message.id);
+        //    let action = this._actions[message.id];
+        //    if(!action) return;
+        //    if(deviceType == 'XR') {
+        //        instance.removeGripAction(action.id);
+        //    } else {
+        //        instance.removePointerAction(action.id);
+        //    }
+        //    delete this._actions[message.id];
+        //    this._clearMegabusters(message.id);
+        //});
         this._listenForComponentAttached(SHOT_COMPONENT_ASSET_ID, (message) => {
             let instance = ProjectHandler.getSessionAsset(message.id);
             let component = ProjectHandler.getSessionAsset(message.componentId);
@@ -173,11 +174,11 @@ export default class MegaBusterSystem extends System {
         let megabuster = instance.clone();
         this._addAudioSources(megabuster);
         megabuster.sourceId = instance.getId();
-        megabuster.removeComponent(componentId);
+        //megabuster.removeComponent(componentId);
         if(controller.constructor.name == 'Avatar') {
-            megabuster.addTo(controller);
             megabuster.setPosition([-0.25, -0.2, -0.2]);
             megabuster.setRotation([0, 0, 0]);
+            megabuster.addTo(controller);
         } else {
             controller.addFromTargetRay(megabuster, [0, 0, 0], [0, 0, 0]);
         }
