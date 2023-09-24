@@ -30,7 +30,7 @@ export default class AuraMaterial extends Material {
             uniforms: THREE.UniformsUtils.clone(shader.uniforms),
             vertexShader: shader.vertexShader,
             fragmentShader: shader.fragmentShader,
-            side: THREE.BackSide,
+            side: this._side,
             blending: THREE.AdditiveBlending,
             transparent: true,
         });
@@ -64,15 +64,19 @@ AuraMaterial.AuraShader = {
     },
     vertexShader: /* glsl */`
         varying vec3 vNormal;
+        varying vec3 vDirection;
         void main() {
+            vec4 view_pos = modelViewMatrix * vec4(position, 1.0);
+            vDirection = normalize(-view_pos.xyz); // vec3(0.0) - view_pos;
             vNormal = normalize( normalMatrix * normal );
             gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
         }`,
     fragmentShader: /* glsl */`
         uniform vec3 color;
         varying vec3 vNormal;
+        varying vec3 vDirection;
         void main() {
-            float intensity = pow( 0.7 - dot( vNormal, vec3( 0.0, 0.0, 1.0 ) ), 4.0 );
+            float intensity = pow( 0.7 + abs(dot( vNormal, vDirection) ), 4.0 );
             gl_FragColor = vec4(color,1.0) * intensity;
         }`
 };
@@ -86,6 +90,7 @@ if(EditorHelpers) {
         }
 
         static fields = [
+            { "parameter": "side" },
             { "parameter": "color", "name": "Color", "type": ColorInput },
         ];
     }

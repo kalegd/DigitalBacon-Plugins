@@ -152,7 +152,6 @@ export default class KiBlastSystem extends System {
                 if(buttonPressed) {
                     if(!this._blastAssets['BLAST']) continue;
                     let blast = this._blastAssets['BLAST'].clone();
-                    blast.attachTo(controller);
                     if(controller.getPalmDirection) {
                         blast.setPosition((controller.getHandedness() == 'LEFT')
                             ? [0.2, 0, 0]
@@ -160,6 +159,7 @@ export default class KiBlastSystem extends System {
                     } else {
                         blast.setPosition([0, 0, -0.2]);
                     }
+                    blast.addTo(controller);
                     controller.blast = blast;
                 } else {
                     if(!controller.blast) continue;
