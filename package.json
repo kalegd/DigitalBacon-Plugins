@@ -1,0 +1,23 @@
+{
+  "name": "digitalbacon-plugins",
+  "version": "0.1.0",
+  "description": "A set of plugins that can be used for more complex Digital Bacon assets",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kalegd/DigitalBaconPlugins.git"
+  },
+  "keywords": [
+    "digitalbacon",
+    "webxr"
+  ],
+  "author": "Gaurav Dutt Kale",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/kalegd/DigitalBaconPlugins/issues"
+  },
+  "homepage": "https://github.com/kalegd/DigitalBaconPlugins#readme"
+}
