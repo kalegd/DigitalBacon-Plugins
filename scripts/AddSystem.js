@@ -12,22 +12,22 @@ if(!window.DigitalBacon) {
 const { Assets, ProjectHandler, PubSub, isEditor } = window.DigitalBacon;
 const { System } = Assets;
 
-const COMPONENT_ASSET_ID = 'df6e1224-b416-493e-90f9-96f8be0d4b48';
+const COMPONENT_ASSET_ID = '9339a01f-73de-490a-b81b-78ad3a155bb1';
 
-export default class DeleteSystem extends System {
+export default class AddSystem extends System {
     constructor(params = {}) {
-        params['assetId'] = DeleteSystem.assetId;
+        params['assetId'] = AddSystem.assetId;
         super(params);
         this._topics = {};
         this._addSubscriptions();
     }
 
     _getDefaultName() {
-        return DeleteSystem.assetName;
+        return AddSystem.assetName;
     }
 
     getDescription() {
-        return 'Deletes asset when event is published';
+        return 'Adds asset when event is published';
     }
 
     _addSubscriptions() {
@@ -47,7 +47,7 @@ export default class DeleteSystem extends System {
     _registerAsset(instance, topic) {
         if(!(topic in this._topics)) {
             this._topics[topic] = new Set();
-            PubSub.subscribe(this._id, topic, () => this._deleteAssets(topic));
+            PubSub.subscribe(this._id, topic, () => this._addAssets(topic));
         }
         this._topics[topic].add(instance);
     }
@@ -60,16 +60,16 @@ export default class DeleteSystem extends System {
         }
     }
 
-    _deleteAssets(topic) {
+    _addAssets(topic) {
         let assets = this._topics[topic];
         if(!assets) return;
         for(let asset of assets) {
-            ProjectHandler.deleteAsset(asset);
+            ProjectHandler.addAsset(asset);
         }
     }
 
-    static assetId = 'ffe54646-8d33-4579-b369-6527df447fe3';
-    static assetName = 'Delete System';
+    static assetId = 'adbdddb2-8492-4cd6-97db-5c864797a499';
+    static assetName = 'Add System';
 }
 
-ProjectHandler.registerAsset(DeleteSystem);
+ProjectHandler.registerAsset(AddSystem);

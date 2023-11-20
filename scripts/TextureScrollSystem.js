@@ -9,11 +9,10 @@ if(!window.DigitalBacon) {
     throw new Error('Missing global DigitalBacon reference');
 }
 
-const { Assets, PartyHandler, PartyMessageHelper, ProjectHandler } = window.DigitalBacon;
+const { Assets, PartyHandler, ProjectHandler } = window.DigitalBacon;
 const { System } = Assets;
 
 const COMPONENT_ASSET_ID = 'a9d2e22f-ddf6-49fe-a420-5fffd5ee69a3';
-const PEER_TOPIC = 'TextureScrollSystem:offsets';
 
 export default class TextureScrollSystem extends System {
     constructor(params = {}) {
@@ -56,9 +55,6 @@ export default class TextureScrollSystem extends System {
             if(Object.keys(textures).length == 0)
                 delete this._scrollDetails[message.componentId];
         });
-        PartyMessageHelper.registerBlockableHandler(PEER_TOPIC, (p, m) => {
-            this._handleOffsets(p, m);
-        });
     }
 
     _onPeerReady() {
@@ -77,7 +73,7 @@ export default class TextureScrollSystem extends System {
         this._publish(offsets);
     }
 
-    _handleOffsets(p, m) {
+    _onPeerMessage(p, m) {
         let offsets = m.offsets;
         for(let componentId in offsets) {
             let component = this._scrollDetails[componentId].component;
@@ -96,10 +92,9 @@ export default class TextureScrollSystem extends System {
 
     _publish(offsets) {
         let message = {
-            topic: PEER_TOPIC,
             offsets: offsets,
         };
-        PartyMessageHelper.queuePublish(JSON.stringify(message));
+        this._publishPeerMessage(message);
     }
 
     update(timeDelta) {

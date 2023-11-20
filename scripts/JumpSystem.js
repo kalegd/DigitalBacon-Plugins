@@ -11,7 +11,7 @@ if(!window.DigitalBacon) {
 
 import * as THREE from 'three';
 
-const { Assets, EditorHelpers, InputHandler, MenuInputs, PartyMessageHelper, ProjectHandler, PubSub, SettingsHandler, UserController, getDeviceType, isEditor, utils } = window.DigitalBacon;
+const { Assets, EditorHelpers, InputHandler, MenuInputs, ProjectHandler, PubSub, SettingsHandler, UserController, getDeviceType, isEditor, utils } = window.DigitalBacon;
 const { System } = Assets;
 const { SystemHelper, EditorHelperFactory } = EditorHelpers;
 const { NumberInput } = MenuInputs;
@@ -27,7 +27,6 @@ export default class JumpSystem extends System {
         this._maxVelocitySustainHeight
             = numberOr(params['maxVelocitySustainHeight'], 0);
         this._terminalVelocity = numberOr(params['terminalVelocity'], 30);
-        this._jumpTopic = this._id + ':Jump';
         this._jumpingDetails = [];
         if(isEditor()) this.update = null;
     }
@@ -38,8 +37,6 @@ export default class JumpSystem extends System {
             SettingsHandler.setUserSetting('Enable Flying', false, true);
         });
         this._subscriptionTopics.push('SETTINGS_UPDATED');
-        PartyMessageHelper.registerBlockableHandler(this._jumpTopic,
-            (p, m) => { this._handleJump(p, m); });
         if(deviceType == 'MOBILE') {
             let jumpButton = InputHandler.addExtraControlsButton(
                 'jump-button-' + this._id, 'JUMP');
@@ -111,7 +108,7 @@ export default class JumpSystem extends System {
         }
     }
 
-    _handleJump(peer, message) {
+    _onPeerMessage(peer, message) {
         let jumpingDetails = {
             isPressed: () => { return true; },
             sustained: message.sustained,
@@ -144,13 +141,12 @@ export default class JumpSystem extends System {
 
     _publish(currentHeight, startHeight, sustained) {
         let message = {
-            topic: this._jumpTopic,
             currentHeight: currentHeight,
             startHeight: startHeight,
             startTime: Date.now(),
             sustained: sustained,
         };
-        PartyMessageHelper.queuePublish(JSON.stringify(message));
+        this._publishPeerMessage(message);
     }
 
     _sustainJump(timeDelta, jumpingDetails) {

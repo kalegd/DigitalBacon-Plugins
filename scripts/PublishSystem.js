@@ -9,7 +9,7 @@ if(!window.DigitalBacon) {
     throw new Error('Missing global DigitalBacon reference');
 }
 
-const { Assets, PartyMessageHelper, ProjectHandler, PubSub, UserController, getDeviceType, isEditor } = window.DigitalBacon;
+const { Assets, ProjectHandler, PubSub, UserController, getDeviceType, isEditor } = window.DigitalBacon;
 const { System } = Assets;
 
 const PUBLISH_TOPIC = 'PublishSystem:published';
@@ -50,9 +50,6 @@ export default class PublishSystem extends System {
             instance.removePointerAction(action.id);
             delete this._actions[id];
         });
-        PartyMessageHelper.registerBlockableHandler(PUBLISH_TOPIC, (p, m) => {
-            this._handlePeerPublished(p, m);
-        });
     }
 
     _addPointerAction(id, instance, topic) {
@@ -65,7 +62,7 @@ export default class PublishSystem extends System {
         this._actions[id] = action;
     }
 
-    _handlePeerPublished(peer, message) {
+    _onPeerMessage(peer, message) {
         let instance = ProjectHandler.getSessionAsset(message.id);
         PubSub.publish(this._id, message.pubSubTopic, {
             asset: instance, userController: peer.controller,
@@ -74,11 +71,10 @@ export default class PublishSystem extends System {
 
     _publish(pubSubTopic, objectId) {
         let message = {
-            topic: PUBLISH_TOPIC,
             pubSubTopic: pubSubTopic,
             id: objectId,
         };
-        PartyMessageHelper.queuePublish(JSON.stringify(message));
+        this._publishPeerMessage(message);
     }
 
     static assetId = 'a94b683c-8176-486a-98fc-b44a8bebae57';

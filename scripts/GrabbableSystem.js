@@ -9,13 +9,13 @@ if(!window.DigitalBacon) {
     throw new Error('Missing global DigitalBacon reference');
 }
 
-const { Assets, PartyMessageHelper, ProjectHandler, UserController, getDeviceType, isEditor } = window.DigitalBacon;
+const { Assets, ProjectHandler, UserController, getDeviceType, isEditor } = window.DigitalBacon;
 const { System } = Assets;
 const deviceType = getDeviceType();
 
 const AVATAR = 'AVATAR';
-const OWNED_TOPIC = 'GrabbableSystem:Owned';
-const RELEASED_TOPIC = 'GrabbableSystem:Released';
+const OWNED_TOPIC = 'OWNED';
+const RELEASED_TOPIC = 'RELEASED';
 const COMPONENT_ASSET_ID = 'd9891de1-914d-4448-9e66-8867211b5dc8';
 
 export default class GrabbableSystem extends System {
@@ -63,12 +63,6 @@ export default class GrabbableSystem extends System {
                 instance.removePointerAction(action.id);
             }
             delete this._actions[message.id];
-        });
-        PartyMessageHelper.registerBlockableHandler(OWNED_TOPIC, (p, m) => {
-            this._handlePeerOwned(p, m);
-        });
-        PartyMessageHelper.registerBlockableHandler(RELEASED_TOPIC, (p, m) => {
-            this._handlePeerReleased(p, m);
         });
     }
 
@@ -156,6 +150,16 @@ export default class GrabbableSystem extends System {
         }
     }
 
+    _onPeerMessage(peer, message) {
+        if(message.topic == OWNED_TOPIC) {
+            this._handlePeerOwned(peer, message);
+        } else if(message.topic == RELEASED_TOPIC) {
+            this._handlePeerReleased(peer, message);
+        } else {
+            console.error('Error: Unexpected peer message topic received in GrabbableSystem');
+        }
+    }
+
     _handlePeerOwned(peer, message) {
         if(this._actions[message.id]) {
             this._peerOwned[peer.id] = message.id;
@@ -191,7 +195,7 @@ export default class GrabbableSystem extends System {
             topic: topic,
             id: instance.getId(),
         };
-        PartyMessageHelper.queuePublish(JSON.stringify(message));
+        this._publishPeerMessage(message);
     }
 
     static assetId = '6329e98a-4311-4457-9198-48d75640f8cc';
