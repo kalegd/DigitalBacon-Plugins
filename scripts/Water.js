@@ -31,8 +31,8 @@ import {
 	HalfFloatType
 } from 'three';
 
-const Water_1_M_Normal = 'https://cdn.jsdelivr.net/npm/digitalbacon-plugins@0.1.0/textures/Water_1_M_Normal.jpg';
-const Water_2_M_Normal = 'https://cdn.jsdelivr.net/npm/digitalbacon-plugins@0.1.0/textures/Water_2_M_Normal.jpg';
+const Water_1_M_Normal = 'https://cdn.jsdelivr.net/npm/digitalbacon-plugins@0.1.1/textures/Water_1_M_Normal.jpg';
+const Water_2_M_Normal = 'https://cdn.jsdelivr.net/npm/digitalbacon-plugins@0.1.1/textures/Water_2_M_Normal.jpg';
 
 class Reflector extends Mesh {
 
