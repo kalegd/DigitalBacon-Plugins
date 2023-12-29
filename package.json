@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kalegd/DigitalBaconPlugins.git"
+    "url": "git+https://github.com/kalegd/DigitalBacon-Plugins.git"
   },
   "keywords": [
     "digitalbacon",
@@ -17,7 +17,7 @@
   "author": "Gaurav Dutt Kale",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/kalegd/DigitalBaconPlugins/issues"
+    "url": "https://github.com/kalegd/DigitalBacon-Plugins/issues"
   },
-  "homepage": "https://github.com/kalegd/DigitalBaconPlugins#readme"
+  "homepage": "https://github.com/kalegd/DigitalBacon-Plugins#readme"
 }
