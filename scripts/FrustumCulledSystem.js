@@ -4,11 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
 const { Assets, ProjectHandler } = window.DigitalBacon;
 const { System } = Assets;
 
@@ -26,9 +21,7 @@ export default class FrustumCulledSystem extends System {
         return FrustumCulledSystem.assetName;
     }
 
-    getDescription() {
-        return "Sets entities' frustumCulled property";
-    }
+    get description() { return "Sets entities' frustumCulled property"; }
 
     _addSubscriptions() {
         this._listenForComponentAttached(COMPONENT_ASSET_ID, (message) => {
@@ -42,7 +35,7 @@ export default class FrustumCulledSystem extends System {
             }
             let assets = this._componentDetails[message.componentId].assets;
             assets[message.id] = asset;
-            this._setFrustumCulled(component.getFrustumCulled(), asset);
+            this._setFrustumCulled(component.frustumCulled, asset);
         });
         this._listenForComponentDetached(COMPONENT_ASSET_ID, (message) => {
             let componentMap = this._componentDetails[message.componentId];
@@ -58,10 +51,10 @@ export default class FrustumCulledSystem extends System {
         });
         this._listenForComponentUpdated(COMPONENT_ASSET_ID, (message) => {
             let component = message.asset;
-            let componentMap = this._componentDetails[component.getId()];
+            let componentMap = this._componentDetails[component.id];
             if(!componentMap) return;
             let assets = componentMap.assets;
-            let frustumCulled = componentMap.component.getFrustumCulled();
+            let frustumCulled = componentMap.component.frustumCulled;
             for(let assetId in assets) {
                 this._setFrustumCulled(frustumCulled, assets[assetId]);
             }
@@ -69,7 +62,7 @@ export default class FrustumCulledSystem extends System {
     }
 
     _setFrustumCulled(frustumCulled, asset) {
-        asset.getObject().traverse((object) => {
+        asset.object.traverse((object) => {
             if(!('oldFrustumCulled' in object.userData))
                 object.userData['oldFrustumCulled'] = object.frustumCulled;
             object.frustumCulled = frustumCulled;
@@ -77,7 +70,7 @@ export default class FrustumCulledSystem extends System {
     }
 
     _resetFrustumCulled(asset) {
-        asset.getObject().traverse((object) => {
+        asset.object.traverse((object) => {
             if('oldFrustumCulled' in object.userData) {
                 object.frustumCulled = object.userData['oldFrustumCulled'];
                 delete object.userData['oldFrustumCulled'];

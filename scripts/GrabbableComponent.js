@@ -4,12 +4,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
-const { Assets, EditorHelpers, ProjectHandler, MenuInputs }=window.DigitalBacon;
+const { Assets, EditorHelpers, ProjectHandler } = window.DigitalBacon;
 const { AssetEntity, Component } = Assets;
 const { ComponentHelper, EditorHelperFactory } = EditorHelpers;
 
@@ -30,16 +25,12 @@ export default class GrabbableComponent extends Component {
         return params;
     }
 
-    getStealable() {
-        return this._stealable;
-    }
+    get stealable() { return this._stealable; }
+
+    set stealable(stealable) { this._stealable = stealable; }
 
     supports(asset) {
         return asset instanceof AssetEntity;
-    }
-
-    setStealable(stealable) {
-        this._stealable = stealable;
     }
 
     static assetId = 'd9891de1-914d-4448-9e66-8867211b5dc8';
@@ -56,7 +47,7 @@ if(EditorHelpers) {
 
         static fields = [
             { "parameter": "stealable", "name": "Stealable",
-                "type": MenuInputs.CheckboxInput },
+                "type": ComponentHelper.FieldTypes.CheckboxField },
         ];
     }
 

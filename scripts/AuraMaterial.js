@@ -4,10 +4,9 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-const { Assets, EditorHelpers, ProjectHandler, MenuInputs, utils } = window.DigitalBacon;
+const { Assets, EditorHelpers, ProjectHandler, utils } = window.DigitalBacon;
 const { Material } = Assets;
 const { MaterialHelper, EditorHelperFactory } = EditorHelpers;
-const { ColorInput } = MenuInputs;
 const { numberOr } = utils;
 import * as THREE from 'three';
 
@@ -43,11 +42,9 @@ export default class AuraMaterial extends Material {
         return params;
     }
 
-    getColor() {
-        return this._color;
-    }
+    get color() { return this._color; }
 
-    setColor(color) {
+    set color(color) {
         if(this._color == color) return;
         this._color = color;
         this._material.uniforms['color'].value.setHex(color);
@@ -90,8 +87,9 @@ if(EditorHelpers) {
         }
 
         static fields = [
-            { "parameter": "side" },
-            { "parameter": "color", "name": "Color", "type": ColorInput },
+            "side",
+            { "parameter": "color", "name": "Color",
+                "type": MaterialHelper.FieldTypes.ColorField },
         ];
     }
 

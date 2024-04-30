@@ -1,12 +1,7 @@
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
-const { Assets, EditorHelpers, ProjectHandler, MenuInputs, getCamera, utils } = window.DigitalBacon;
+const { Assets, EditorHelpers, ProjectHandler, getCamera, utils } = window.DigitalBacon;
 const { CustomAssetEntity } = Assets;
 const { CustomAssetEntityHelper, EditorHelperFactory } = EditorHelpers;
-const { ColorInput, NumberInput, Vector2Input } = MenuInputs;
+const { ColorField, NumberField, Vector2Field } = CustomAssetEntityHelper.FieldTypes;
 const { numberOr } = utils;
 
 import * as THREE from 'three';
@@ -991,57 +986,40 @@ export default class WaterAsset extends CustomAssetEntity {
         return params;
     }
 
-    getColor() {
-        return this._color.getHex();
-    }
+    get color() { return this._color.getHex(); }
+    get flowDirection() { return this._flowDirection; }
+    get flowSpeed() { return this._flowSpeed; }
+    get height() { return this._height; }
+    get waterScale() { return this._waterScale; }
+    get width() { return this._width; }
 
-    getFlowDirection() {
-        return this._flowDirection;
-    }
-
-    getFlowSpeed() {
-        return this._flowSpeed;
-    }
-
-    getHeight() {
-        return this._height;
-    }
-
-    getWaterScale() {
-        return this._waterScale;
-    }
-
-    getWidth() {
-        return this._width;
-    }
-
-    setColor(color) {
+    set color(color) {
         this._color.set(color);
         this._mesh.material.uniforms['color'].value.set(color);
     }
 
-    setFlowDirection(flowDirection) {
+    set flowDirection(flowDirection) {
         this._flowDirection = flowDirection;
         this._mesh.material.uniforms['flowDirection'].value
             .fromArray(flowDirection);
     }
 
-    setFlowSpeed(flowSpeed) {
+    set flowSpeed(flowSpeed) {
         this._flowSpeed = flowSpeed;
         this._mesh.flowSpeed = flowSpeed;
     }
 
-    setHeight(height) {
+    set height(height) {
         this._height = height;
         this._updateGeometry(this._height, this._width);
     }
 
-    setWaterScale(waterScale) {
+    set waterScale(waterScale) {
         this._waterScale = waterScale;
         this._mesh.material.uniforms['config'].value.w = waterScale;
     }
 
-    setWidth(width) {
+    set width(width) {
         this._width = width;
         this._updateGeometry(this._height, this._width);
     }
@@ -1075,21 +1053,21 @@ if(EditorHelpers) {
         }
 
         static fields = [
-            { "parameter": "visualEdit" },
+            "visualEdit",
             { "parameter": "height", "name": "Height", "min": 0,
-                "type": NumberInput },
+                "type": NumberField },
             { "parameter": "width", "name": "Width", "min": 0,
-                "type": NumberInput },
-            { "parameter": "color", "name": "Color", "type": ColorInput },
+                "type": NumberField },
+            { "parameter": "color", "name": "Color", "type": ColorField },
             { "parameter": "flowSpeed", "name": "Flow Speed", "min": 0,
-                "type": NumberInput },
+                "type": NumberField },
             { "parameter": "flowDirection", "name": "Flow Direction",
-                "type": Vector2Input },
+                "type": Vector2Field },
             { "parameter": "waterScale", "name": "Water Scale", "min": 0,
-                "type": NumberInput },
-            { "parameter": "position" },
-            { "parameter": "rotation" },
-            { "parameter": "scale" },
+                "type": NumberField },
+            "position",
+            "rotation",
+            "scale",
         ];
     }
 

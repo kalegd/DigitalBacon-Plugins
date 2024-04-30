@@ -4,17 +4,12 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
 import * as THREE from 'three';
 
-const { Assets, EditorHelpers, InputHandler, MenuInputs, ProjectHandler, PubSub, SettingsHandler, UserController, getDeviceType, isEditor, utils } = window.DigitalBacon;
+const { Assets, EditorHelpers, InputHandler, ProjectHandler, PubSub, SettingsHandler, UserController, getDeviceType, isEditor, utils } = window.DigitalBacon;
 const { System } = Assets;
 const { SystemHelper, EditorHelperFactory } = EditorHelpers;
-const { NumberInput } = MenuInputs;
+const { NumberField } = SystemHelper.FieldTypes;
 const { numberOr } = utils;
 const deviceType = getDeviceType();
 
@@ -60,39 +55,23 @@ export default class JumpSystem extends System {
         return params;
     }
 
-    getDescription() {
-        return "Adds functionality to Mega Busters";
-    }
+    get description() { return "Adds functionality to Mega Busters"; }
+    get gravity() { return this._gravity; }
+    get initialVelocity() { return this._initialVelocity; }
+    get maxVelocitySustainHeight() { return this._maxVelocitySustainHeight; }
+    get terminalVelocity() { return this._terminalVelocity; }
 
-    getGravity() {
-        return this._gravity;
-    }
+    set gravity(gravity) { this._gravity = gravity; }
 
-    getInitialVelocity() {
-        return this._initialVelocity;
-    }
-
-    getMaxVelocitySustainHeight() {
-        return this._maxVelocitySustainHeight;
-    }
-
-    getTerminalVelocity() {
-        return this._terminalVelocity;
-    }
-
-    setGravity(gravity) {
-        this._gravity = gravity;
-    }
-
-    setInitialVelocity(initialVelocity) {
+    set initialVelocity(initialVelocity) {
         this._initialVelocity = initialVelocity;
     }
 
-    setMaxVelocitySustainHeight(maxVelocitySustainHeight) {
+    set maxVelocitySustainHeight(maxVelocitySustainHeight) {
         this._maxVelocitySustainHeight = maxVelocitySustainHeight;
     }
 
-    setTerminalVelocity(terminalVelocity) {
+    set terminalVelocity(terminalVelocity) {
         this._terminalVelocity = terminalVelocity;
     }
 
@@ -113,11 +92,11 @@ export default class JumpSystem extends System {
             isPressed: () => { return true; },
             sustained: message.sustained,
             startHeight: message.startHeight,
-            userObject: peer.controller.getObject(),
+            userObject: peer.controller.object,
             velocity: this._initialVelocity,
         };
         jumpingDetails.userObject.position.setY(message.currentHeight);
-        this._jumpingDetails[peer.controller.getId()] = jumpingDetails;
+        this._jumpingDetails[peer.controller.id] = jumpingDetails;
         let timeDelta = (Date.now() - message.startTime) / 1000;
         this._updateJump(timeDelta, jumpingDetails);
     }
@@ -125,7 +104,7 @@ export default class JumpSystem extends System {
     _checkJump() {
         if(this._myJumpingDetails) return;
         if(this._isPressed()) {
-            let userObject = UserController.getObject();
+            let userObject = UserController.object;
             let startHeight = userObject.position.y;
             this._myJumpingDetails = {
                 isPressed: () => { return this._isPressed(); },
@@ -264,14 +243,14 @@ if(EditorHelpers) {
 
         static fields = [
             { "parameter": "gravity", "name": "Gravity", "min": 0,
-                "type": NumberInput },
+                "type": NumberField },
             { "parameter": "initialVelocity", "name": "Initial Velocity",
-                "min": 0, "type": NumberInput },
+                "min": 0, "type": NumberField },
             { "parameter": "maxVelocitySustainHeight",
                 "name": "Max Velocity Sustain Height", "min": 0,
-                "type": NumberInput },
+                "type": NumberField },
             { "parameter": "terminalVelocity", "name": "Terminal Velocity",
-                "min": 0, "type": NumberInput },
+                "min": 0, "type": NumberField },
         ];
     }
 

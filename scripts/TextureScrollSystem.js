@@ -4,11 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
 const { Assets, PartyHandler, ProjectHandler } = window.DigitalBacon;
 const { System } = Assets;
 
@@ -26,9 +21,7 @@ export default class TextureScrollSystem extends System {
         return TextureScrollSystem.assetName;
     }
 
-    getDescription() {
-        return 'Scrolls Textures';
-    }
+    get description() { return 'Scrolls Textures'; }
 
     _addSubscriptions() {
         this._listenForComponentAttached(COMPONENT_ASSET_ID, (message) => {
@@ -49,7 +42,7 @@ export default class TextureScrollSystem extends System {
             let textures = componentMap.textures;
             if(textures[message.id]) {
                 let texture = textures[message.id];
-                texture.setOffset(texture.getOffset());
+                texture.offset = texture.offset;
                 delete textures[message.id];
             }
             if(Object.keys(textures).length == 0)
@@ -65,7 +58,7 @@ export default class TextureScrollSystem extends System {
             let textures = this._scrollDetails[componentId].textures;
             offsets[componentId] = {};
             for(let textureId in textures) {
-                let texture = textures[textureId].getTexture();
+                let texture = textures[textureId].texture;
                 offsets[componentId][textureId]
                     = [texture.offset.x, texture.offset.y];
             }
@@ -82,7 +75,7 @@ export default class TextureScrollSystem extends System {
                 if(!(textureId in offsets[componentId])) continue;
                 let peerOffset = offsets[componentId][textureId];
                 let texture = textures[textureId];
-                texture = texture.getTexture();
+                texture = texture.texture;
                 let offset = texture.offset;
                 offset.setX(peerOffset[0]);
                 offset.setY(peerOffset[1]);
@@ -101,14 +94,14 @@ export default class TextureScrollSystem extends System {
         for(let componentId in this._scrollDetails) {
             let component = this._scrollDetails[componentId].component;
             let textures = this._scrollDetails[componentId].textures;
-            let scrollPercent = component.getScrollPercent();
-            let period = component.getPeriod();
+            let scrollPercent = component.scrollPercent;
+            let period = component.period;
             let multiplier = timeDelta / 100 / period;
             let xDiff = scrollPercent[0] * multiplier;
             let yDiff = scrollPercent[1] * multiplier;
             for(let textureId in textures) {
                 let texture = textures[textureId];
-                texture = texture.getTexture();
+                texture = texture.texture;
                 let offset = texture.offset;
                 if(xDiff) offset.setX(offset.x + xDiff);
                 if(yDiff) offset.setY(offset.y + yDiff);

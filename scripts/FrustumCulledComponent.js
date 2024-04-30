@@ -4,12 +4,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
-const { Assets, EditorHelpers, ProjectHandler, MenuInputs }=window.DigitalBacon;
+const { Assets, EditorHelpers, ProjectHandler } = window.DigitalBacon;
 const { AssetEntity, Component } = Assets;
 const { ComponentHelper, EditorHelperFactory } = EditorHelpers;
 
@@ -30,16 +25,12 @@ export default class FrustumCulledComponent extends Component {
         return params;
     }
 
-    getFrustumCulled() {
-        return this._frustumCulled;
-    }
+    get frustumCulled() { return this._frustumCulled; }
+
+    set frustumCulled(frustumCulled) { this._frustumCulled = frustumCulled; }
 
     supports(asset) {
         return asset instanceof AssetEntity;
-    }
-
-    setFrustumCulled(frustumCulled) {
-        this._frustumCulled = frustumCulled;
     }
 
     static assetId = 'ab72b23e-47c6-4406-b184-9d9a175394b0';
@@ -56,7 +47,7 @@ if(EditorHelpers) {
 
         static fields = [
             { "parameter": "frustumCulled", "name": "Frustum Culled",
-                "type": MenuInputs.CheckboxInput },
+                "type": ComponentHelper.FieldTypes.CheckboxField },
         ];
     }
 

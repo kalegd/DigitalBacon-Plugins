@@ -4,12 +4,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
-const { Assets, EditorHelpers, ProjectHandler, MenuInputs }=window.DigitalBacon;
+const { Assets, EditorHelpers, ProjectHandler } = window.DigitalBacon;
 const { AssetEntity, Component } = Assets;
 const { ComponentHelper, EditorHelperFactory } = EditorHelpers;
 
@@ -30,16 +25,12 @@ export default class RenderOrderComponent extends Component {
         return params;
     }
 
-    getRenderOrder() {
-        return this._renderOrder;
-    }
+    get renderOrder() { return this._renderOrder; }
+
+    set renderOrder(renderOrder) { this._renderOrder = renderOrder; }
 
     supports(asset) {
         return asset instanceof AssetEntity;
-    }
-
-    setRenderOrder(renderOrder) {
-        this._renderOrder = renderOrder;
     }
 
     static assetId = 'f4e5b6a5-3712-4f0b-883a-197c26debf24';
@@ -56,7 +47,7 @@ if(EditorHelpers) {
 
         static fields = [
             { "parameter": "renderOrder", "name": "Render Order",
-                "type": MenuInputs.NumberInput },
+                "type": ComponentHelper.FieldTypes.NumberField },
         ];
     }
 

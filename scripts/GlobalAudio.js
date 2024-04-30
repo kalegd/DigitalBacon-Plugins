@@ -4,15 +4,10 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
-const { Assets, AudioHandler, EditorHelpers, LibraryHandler, ProjectHandler, MenuInputs, isEditor, utils } = window.DigitalBacon;
+const { Assets, AudioHandler, EditorHelpers, LibraryHandler, ProjectHandler, isEditor, utils } = window.DigitalBacon;
 const { CustomAsset } = Assets;
 const { CustomAssetHelper, EditorHelperFactory } = EditorHelpers;
-const { AudioInput, CheckboxInput, NumberInput } = MenuInputs;
+const { AudioField, CheckboxField, NumberField } = CustomAssetHelper.FieldTypes;
 const { numberOr } = utils;
 
 
@@ -21,7 +16,7 @@ import * as THREE from 'three';
 export default class GlobalAudio extends CustomAsset {
     constructor(params = {}) {
         super(params);
-        this._audio = params['audio'];
+        this._audioId = params['audioId'];
         this._autoplay = params['autoplay'] || false;
         this._loop = params['loop'] || false;
         this._volume = numberOr(params['volume'], 1);
@@ -29,7 +24,7 @@ export default class GlobalAudio extends CustomAsset {
     }
 
     _createAudio(assetId) {
-        let audioBuffer = LibraryHandler.getBuffer(this._audio);
+        let audioBuffer = LibraryHandler.getBuffer(this._audioId);
         this._object = new THREE.Audio(AudioHandler.getListener());
         if(!isEditor) this._object.autoplay = this._autoplay;
         this._object.autoplay = this._autoplay;
@@ -49,46 +44,35 @@ export default class GlobalAudio extends CustomAsset {
 
     exportParams() {
         let params = super.exportParams();
-        params['audio'] = this._audio;
+        params['audioId'] = this._audioId;
         params['autoplay'] = this._autoplay;
         params['loop'] = this._loop;
         params['volume'] = this._volume;
         return params;
     }
 
-    getAudio() {
-        return this._audio;
-    }
+    get audioId() { return this._audioId; }
+    get autoplay() { return this._autoplay; }
+    get loop() { return this._loop; }
+    get volume() { return this._volume; }
 
-    getAutoplay() {
-        return this._autoplay;
-    }
-
-    getLoop() {
-        return this._loop;
-    }
-
-    getVolume() {
-        return this._volume;
-    }
-
-    setAudio(audio) {
-        let audioBuffer = LibraryHandler.getBuffer(audio);
-        this._audio = audio;
+    set audioId(audioId) {
+        let audioBuffer = LibraryHandler.getBuffer(audioId);
+        this._audioId = audioId;
         this._object.setBuffer(audioBuffer);
     }
 
-    setAutoplay(autoplay) {
+    set autoplay(autoplay) {
         this._autoplay = autoplay;
         if(!isEditor) this._object.autoplay = autoplay;
     }
 
-    setLoop(loop) {
+    set loop(loop) {
         this._loop = loop;
         this._object.setLoop(loop);
     }
 
-    setVolume(volume) {
+    set volume(volume) {
         this._volume = volume;
         this._object.setVolume(volume);
     }
@@ -106,13 +90,13 @@ if(EditorHelpers) {
         }
 
         static fields = [
-            { "parameter": "audio", "name": "Audio", "type": AudioInput },
+            { "parameter": "audioId", "name": "Audio", "type": AudioField },
             { "parameter": "autoplay", "name": "Auto Play",
-                "suppressMenuFocusEvent": true, "type": CheckboxInput },
+                "suppressMenuFocusEvent": true, "type": CheckboxField },
             { "parameter": "loop", "name": "Loop",
-                "suppressMenuFocusEvent": true, "type": CheckboxInput },
+                "suppressMenuFocusEvent": true, "type": CheckboxField },
             { "parameter": "volume", "name": "Volume", "min": 0,
-                "type": NumberInput },
+                "type": NumberField },
         ];
     }
 

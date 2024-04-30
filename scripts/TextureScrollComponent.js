@@ -4,12 +4,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
-const { Assets, EditorHelpers, ProjectHandler, MenuInputs }=window.DigitalBacon;
+const { Assets, EditorHelpers, ProjectHandler } = window.DigitalBacon;
 const { Component, Texture } = Assets;
 const { ComponentHelper, EditorHelperFactory } = EditorHelpers;
 
@@ -32,24 +27,14 @@ export default class TextureScrollComponent extends Component {
         return params;
     }
 
-    getScrollPercent() {
-        return this._scrollPercent;
-    }
+    get scrollPercent() { return this._scrollPercent; }
+    get period() { return this._period; }
 
-    getPeriod() {
-        return this._period;
-    }
+    set scrollPercent(scrollPercent) { this._scrollPercent = scrollPercent; }
+    set period(period) { this._period = period; }
 
     supports(asset) {
         return asset instanceof Texture;
-    }
-
-    setScrollPercent(scrollPercent) {
-        this._scrollPercent = scrollPercent;
-    }
-
-    setPeriod(period) {
-        this._period = period;
     }
 
     static assetId = 'a9d2e22f-ddf6-49fe-a420-5fffd5ee69a3';
@@ -66,10 +51,10 @@ if(EditorHelpers) {
 
         static fields = [
             { "parameter": "scrollPercent", "name": "Scroll Percent",
-                "type": MenuInputs.Vector2Input },
+                "type": ComponentHelper.FieldTypes.Vector2Field },
             { "parameter": "period", "name": "Period",
                 "map": { "Per Second": 1, "Per Minute": 60 },
-                "type": MenuInputs.EnumInput, }
+                "type": ComponentHelper.FieldTypes.EnumField, }
         ];
     }
 

@@ -4,24 +4,14 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
-const { Assets, AudioHandler, EditorHelpers, LibraryHandler, ProjectHandler, MenuInputs, getCamera, isEditor, utils } = window.DigitalBacon;
-const { CustomAssetEntity } = Assets;
+const { Assets, DigitalBaconUI, EditorHelpers, ProjectHandler, getCamera, utils } = window.DigitalBacon;
 const { CustomAssetEntityHelper, EditorHelperFactory } = EditorHelpers;
-const { ColorInput, EnumInput, NumberInput, TextInput } = MenuInputs;
+const { ColorField, EnumField, NumberField, TextField } = CustomAssetEntityHelper.FieldTypes;
 const { numberOr } = utils;
 
 import * as THREE from 'three';
-import ThreeMeshUI from 'three-mesh-ui';
 
-const FONT_FAMILY = 'https://cdn.jsdelivr.net/npm/msdf-fonts/build/custom/digitalbacon-OpenSans-Regular-msdf.json';
-const FONT_TEXTURE = 'https://cdn.jsdelivr.net/npm/msdf-fonts/build/custom/digitalbacon-OpenSans-Regular-msdf.png';
-
-export default class Text extends CustomAssetEntity {
+export default class Text extends Assets.CustomAssetEntity {
     constructor(params = {}) {
         super(params);
         this._backgroundColor = new THREE.Color(
@@ -34,31 +24,28 @@ export default class Text extends CustomAssetEntity {
         this._justifyContent = params['justifyContent'] || 'center';
         this._padding = numberOr(params['padding'], 0);
         this._text = params['text'] || 'Hi :)';
+        this._textAlign = params['textAlign'] || 'left';
         this._height = numberOr(params['height'], 1);
         this._width = numberOr(params['width'], 1);
         this._createMesh();
     }
 
     _createMesh() {
-        this._block = new ThreeMeshUI.Block({
-            backgroundColor: this._backgroundColor,
-            backgroundOpacity: this._backgroundOpacity,
+        this._block = new DigitalBaconUI.Body({
             borderRadius: this._borderRadius,
-            //borderWidth: 0.001,
-            //borderColor: Colors.white,
-            //borderOpacity: 0.75,
-            fontFamily: FONT_FAMILY,
-            fontTexture: FONT_TEXTURE,
             height: this._height,
             justifyContent: this._justifyContent,
+            materialColor: this._backgroundColor,
+            opacity: this._backgroundOpacity,
             padding: this._padding,
             width: this._width,
         });
-        this._textComponent = new ThreeMeshUI.Text({
-            content: this._text,
-            fontColor: this._fontColor,
+        this._textComponent = new DigitalBaconUI.Text(this._text, {
+            color: this._fontColor,
             fontSize: this._fontSize,
-            offset: 0,
+            maxWidth: this._width,
+            textAlign: this._textAlign,
+            width: '100%',
         });
         this._block.add(this._textComponent);
         this._object.add(this._block);
@@ -79,98 +66,76 @@ export default class Text extends CustomAssetEntity {
         params['justifyContent'] = this._justifyContent;
         params['padding'] = this._padding;
         params['text'] = this._text;
+        params['textAlign'] = this._textAlign;
         params['width'] = this._width;
         return params;
     }
 
-    getBackgroundColor() {
-        return this._backgroundColor.getHex();
-    }
+    get backgroundColor() { return this._backgroundColor.getHex(); }
+    get backgroundOpacity() { return this._backgroundOpacity; }
+    get borderRadius() { return this._borderRadius; }
+    get fontColor() { return this._fontColor.getHex(); }
+    get fontSize() { return this._fontSize; }
+    get justifyContent() { return this._justifyContent; }
+    get padding() { return this._padding; }
+    get text() { return this._text; }
+    get textAlign() { return this._textAlign; }
+    get height() { return this._height; }
+    get width() { return this._width; }
 
-    getBackgroundOpacity() {
-        return this._backgroundOpacity;
-    }
-
-    getBorderRadius() {
-        return this._borderRadius;
-    }
-
-    getFontColor() {
-        return this._fontColor.getHex();
-    }
-
-    getFontSize() {
-        return this._fontSize;
-    }
-
-    getJustifyContent() {
-        return this._justifyContent;
-    }
-
-    getPadding() {
-        return this._padding;
-    }
-
-    getText() {
-        return this._text;
-    }
-
-    getHeight() {
-        return this._height;
-    }
-
-    getWidth() {
-        return this._width;
-    }
-
-    setBackgroundColor(backgroundColor) {
+    set backgroundColor(backgroundColor) {
         this._backgroundColor.set(backgroundColor);
-        this._block.set({ backgroundColor: this._backgroundColor });
+        this._block.materialColor = this._backgroundColor;
     }
 
-    setBackgroundOpacity(backgroundOpacity) {
+    set backgroundOpacity(backgroundOpacity) {
         this._backgroundOpacity = backgroundOpacity;
-        this._block.set({ backgroundOpacity: backgroundOpacity });
+        this._block.opacity = backgroundOpacity;
     }
 
-    setBorderRadius(borderRadius) {
+    set borderRadius(borderRadius) {
         this._borderRadius = borderRadius;
-        this._block.set({ borderRadius: borderRadius });
+        this._block.borderRadius = borderRadius;
     }
 
-    setFontColor(fontColor) {
+    set fontColor(fontColor) {
         this._fontColor.set(fontColor);
-        this._textComponent.set({ fontColor: this._fontColor });
+        this._textComponent.color = this._fontColor;
     }
 
-    setFontSize(fontSize) {
+    set fontSize(fontSize) {
         this._fontSize = fontSize;
-        this._textComponent.set({ fontSize: fontSize });
+        this._textComponent.fontSize = fontSize;
     }
 
-    setJustifyContent(justifyContent) {
+    set justifyContent(justifyContent) {
         this._justifyContent = justifyContent;
-        this._block.set({ justifyContent: justifyContent });
+        this._block.justifyContent = justifyContent;
     }
 
-    setPadding(padding) {
+    set padding(padding) {
         this._padding = padding;
-        this._block.set({ padding: padding });
+        this._block.padding = padding;
     }
 
-    setText(text) {
+    set text(text) {
         this._text = text;
-        this._textComponent.set({ content: text });
+        this._textComponent.text = text;
     }
 
-    setHeight(height) {
+    set textAlign(textAlign) {
+        this._textAlign = textAlign;
+        this._textComponent.textAlign = textAlign;
+    }
+    set height(height) {
         this._height = height;
-        this._block.set({ height: height });
+        this._block.height = height;
     }
 
-    setWidth(width) {
+    set width(width) {
         this._width = width;
-        this._block.set({ width: width });
+        this._block.width = width;
+        this._textComponent.maxWidth = width;
     }
 
     static assetId = '270aff2d-3706-4b36-bc36-c13c974d819f';
@@ -186,46 +151,49 @@ if(EditorHelpers) {
         }
 
         place(intersection) {
-            let camera = getCamera();
             let vector3 = new THREE.Vector3();
-            let object = intersection.object;
-            let point = intersection.point;
-            let face = intersection.face;
+            let { object, point } = intersection;
             object.updateMatrixWorld();
             let normal = intersection.face.normal.clone()
                 .transformDirection(object.matrixWorld).clampLength(0, 0.001);
-            if(camera.getWorldDirection(vector3).dot(normal) > 0)
+            if(getCamera().getWorldDirection(vector3).dot(normal) > 0)
                 normal.negate();
-            this._object.position.copy(normal).add(point);
-            this._object.lookAt(normal.add(this._object.position));
+            point.add(normal);
+            this._object.position.copy(point);
+            this._object.parent.worldToLocal(this._object.position);
+            point.add(normal);
+            this._object.lookAt(point);
             this.roundAttributes(true);
         }
 
         static fields = [
-            { "parameter": "visualEdit" },
-            { "parameter": "text", "name": "Text", "type": TextInput },
+            "visualEdit",
+            { "parameter": "text", "name": "Text", "type": TextField },
             { "parameter": "fontSize", "name": "Font Size", "min": 0,
-                "type": NumberInput },
+                "type": NumberField },
             { "parameter": "width", "name": "Width", "min": 0.000001,
-                "type": NumberInput },
+                "type": NumberField },
             { "parameter": "height", "name": "Height", "min": 0.000001,
-                "type": NumberInput },
+                "type": NumberField },
             { "parameter": "fontColor", "name": "Font Color",
-                "type": ColorInput },
+                "type": ColorField },
             { "parameter": "backgroundColor", "name": "Background Color",
-                "type": ColorInput },
+                "type": ColorField },
             { "parameter": "backgroundOpacity", "name": "Background Opacity",
-                "min": 0, "type": NumberInput },
+                "min": 0, "type": NumberField },
             { "parameter": "borderRadius", "name": "Border Radius",
-                "min": 0, "type": NumberInput },
+                "min": 0, "type": NumberField },
             { "parameter": "padding", "name": "Padding",
-                "min": 0, "type": NumberInput },
+                "min": 0, "type": NumberField },
             { "parameter": "justifyContent", "name": "Justify Content",
                 "map": { "Start": "start", "Center": "center", "End": "end" },
-                "type": EnumInput },
-            { "parameter": "position" },
-            { "parameter": "rotation" },
-            { "parameter": "scale" },
+                "type": EnumField },
+            { "parameter": "textAlign", "name": "Text Alignment",
+                "map": { "Left": "left", "Center": "center", "Right": "right" },
+                "type": EnumField },
+            "position",
+            "rotation",
+            "scale",
         ];
     }
 

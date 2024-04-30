@@ -4,11 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
 const { Assets, ProjectHandler } = window.DigitalBacon;
 const { System } = Assets;
 
@@ -26,9 +21,7 @@ export default class RenderOrderSystem extends System {
         return RenderOrderSystem.assetName;
     }
 
-    getDescription() {
-        return "Sets entities' renderOrder property";
-    }
+    get description() { return "Sets entities' renderOrder property"; }
 
     _addSubscriptions() {
         this._listenForComponentAttached(COMPONENT_ASSET_ID, (message) => {
@@ -42,7 +35,7 @@ export default class RenderOrderSystem extends System {
             }
             let assets = this._componentDetails[message.componentId].assets;
             assets[message.id] = asset;
-            this._setRenderOrder(component.getRenderOrder(), asset);
+            this._setRenderOrder(component.renderOrder, asset);
         });
         this._listenForComponentDetached(COMPONENT_ASSET_ID, (message) => {
             let componentMap = this._componentDetails[message.componentId];
@@ -58,10 +51,10 @@ export default class RenderOrderSystem extends System {
         });
         this._listenForComponentUpdated(COMPONENT_ASSET_ID, (message) => {
             let component = message.asset;
-            let componentMap = this._componentDetails[component.getId()];
+            let componentMap = this._componentDetails[component.id];
             if(!componentMap) return;
             let assets = componentMap.assets;
-            let renderOrder = componentMap.component.getRenderOrder();
+            let renderOrder = componentMap.component.renderOrder;
             for(let assetId in assets) {
                 this._setRenderOrder(renderOrder, assets[assetId]);
             }
@@ -69,7 +62,7 @@ export default class RenderOrderSystem extends System {
     }
 
     _setRenderOrder(renderOrder, asset) {
-        asset.getObject().traverse((object) => {
+        asset.object.traverse((object) => {
             if(!('oldRenderOrder' in object.userData))
                 object.userData['oldRenderOrder'] = object.renderOrder;
             object.renderOrder = renderOrder;
@@ -77,7 +70,7 @@ export default class RenderOrderSystem extends System {
     }
 
     _resetRenderOrder(asset) {
-        asset.getObject().traverse((object) => {
+        asset.object.traverse((object) => {
             if('oldRenderOrder' in object.userData) {
                 object.renderOrder = object.userData['oldRenderOrder'];
                 delete object.userData['oldRenderOrder'];

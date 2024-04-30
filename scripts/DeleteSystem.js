@@ -4,11 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
 const { Assets, ProjectHandler, PubSub, isEditor } = window.DigitalBacon;
 const { System } = Assets;
 
@@ -26,21 +21,19 @@ export default class DeleteSystem extends System {
         return DeleteSystem.assetName;
     }
 
-    getDescription() {
-        return 'Deletes asset when event is published';
-    }
+    get description() { return 'Deletes asset when event is published'; }
 
     _addSubscriptions() {
         if(isEditor()) return;
         this._listenForComponentAttached(COMPONENT_ASSET_ID, (message) => {
             let instance = ProjectHandler.getSessionAsset(message.id);
             let component = ProjectHandler.getSessionAsset(message.componentId);
-            this._registerAsset(instance, component.getTopic());
+            this._registerAsset(instance, component.topic);
         });
         this._listenForComponentDetached(COMPONENT_ASSET_ID, (message) => {
             let instance = ProjectHandler.getSessionAsset(message.id);
             let component = ProjectHandler.getSessionAsset(message.componentId);
-            this._unregisterAsset(instance, component.getTopic());
+            this._unregisterAsset(instance, component.topic);
         });
     }
 

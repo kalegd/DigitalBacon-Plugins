@@ -4,11 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
 const { Assets, ProjectHandler, PubSub, UserController, getDeviceType, isEditor } = window.DigitalBacon;
 const { System } = Assets;
 
@@ -20,8 +15,6 @@ export default class PublishSystem extends System {
         params['assetId'] = PublishSystem.assetId;
         super(params);
         this._actions = {};
-        this._notStealable = {};
-        this._onPartyJoined = {};
         this._addSubscriptions();
     }
 
@@ -29,9 +22,7 @@ export default class PublishSystem extends System {
         return PublishSystem.assetName;
     }
 
-    getDescription() {
-        return 'Publishes events when assets are selected';
-    }
+    get description() { return 'Publishes events when assets are selected'; }
 
     _addSubscriptions() {
         if(isEditor()) return;
@@ -40,26 +31,27 @@ export default class PublishSystem extends System {
             if(this._actions[id]) return;
             let instance = ProjectHandler.getSessionAsset(message.id);
             let component = ProjectHandler.getSessionAsset(message.componentId);
-            this._addPointerAction(id, instance, component.getTopic());
+            this._addPointerAction(id, instance, component.topic);
         });
         this._listenForComponentDetached(COMPONENT_ASSET_ID, (message) => {
             let id = message.id + ':' + message.componentId;
             let action = this._actions[id];
             if(!action) return;
             let instance = ProjectHandler.getSessionAsset(message.id);
-            instance.removePointerAction(action.id);
+            instance.pointerInteractable.removeEventListener('click', action);
             delete this._actions[id];
         });
     }
 
     _addPointerAction(id, instance, topic) {
-        let action = instance.addPointerAction(() => {
+        let callback = () => {
             PubSub.publish(this._id, topic, {
                 asset: instance, userController: UserController,
             });
-            this._publish(topic, instance.getId());
-        });
-        this._actions[id] = action;
+            this._publish(topic, instance.id);
+        };
+        instance.pointerInteractable.addEventListener('click', callback);
+        this._actions[id] = callback;
     }
 
     _onPeerMessage(peer, message) {

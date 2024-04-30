@@ -4,11 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
 const { Assets, ProjectHandler, UserController, getDeviceType, isEditor } = window.DigitalBacon;
 const { System } = Assets;
 const deviceType = getDeviceType();
@@ -23,8 +18,8 @@ export default class GrabbableSystem extends System {
         params['assetId'] = GrabbableSystem.assetId;
         super(params);
         this._actions = {};
-        this._notStealable = {};
         this._peerOwned = {};
+        this._notStealable = new Set();
         this._publishForNewPeers = {};
         this._onPartyJoined = {};
         this._addSubscriptions();
@@ -34,35 +29,29 @@ export default class GrabbableSystem extends System {
         return GrabbableSystem.assetName;
     }
 
-    getDescription() {
-        return 'Enables assets to be picked up by the user';
-    }
+    get description() { return 'Enables assets to be picked up by the user'; }
 
     _addSubscriptions() {
         if(isEditor()) return;
         this._listenForComponentAttached(COMPONENT_ASSET_ID, (message) => {
             let id = message.id;
-            if(this._actions[id] || this._notStealable[id]) return;
+            if(this._actions[id]) return;
             let instance = ProjectHandler.getSessionAsset(id);
             let component = ProjectHandler.getSessionAsset(message.componentId);
             if(!instance.originalParent)
                 instance.originalParent = instance.parent;
             if(deviceType == 'XR') {
-                this._addGripAction(instance, component.getStealable());
+                this._createGripEventListeners(instance, component.stealable);
             } else {
-                this._addPointerAction(instance, component.getStealable());
+                this._createPointerEventListeners(instance,component.stealable);
             }
+            this._addEventListeners(instance);
         });
         this._listenForComponentDetached(COMPONENT_ASSET_ID, (message) => {
             let instance = ProjectHandler.getSessionAsset(message.id);
-            let action = this._actions[message.id];
-            if(!action) return;
-            if(deviceType == 'XR') {
-                instance.removeGripAction(action.id);
-            } else {
-                instance.removePointerAction(action.id);
-            }
+            this._removeEventListeners(instance);
             delete this._actions[message.id];
+            this._notStealable.delete(message.id);
         });
     }
 
@@ -73,9 +62,9 @@ export default class GrabbableSystem extends System {
     }
 
     _onPeerDisconnected(peer) {
-        let id = this._peerOwned[peer.id];
-        if(id) {
-            this._handlePeerReleased(peer, { id: id });
+        if(!this._peerOwned[peer.id]) return;
+        for(let id of this._peerOwned[peer.id]) {
+            if(id) this._handlePeerReleased(peer, { id: id });
         }
     }
 
@@ -87,53 +76,77 @@ export default class GrabbableSystem extends System {
     }
 
     _onPartyEnded() {
-        for(let id in this._notStealable) {
-            let instance = ProjectHandler.getSessionAsset(id);
-            let action = this._notStealable[id];
-            this._actions[id] = action;
-            if(deviceType == 'XR') {
-                instance.addGripAction(action);
-            } else {
-                instance.addPointerAction(action);
+        for(let id in this._peerOwned) {
+            for(let instanceId of this._peerOwned[id]) {
+                let instance = ProjectHandler.getSessionAsset(instanceId);
+                if(this._notStealable.has(instanceId))
+                    this._addEventListeners(instance);
+                this._peerOwned[id].delete(instanceId);
             }
-            delete this._notStealable[id];
         }
     }
 
-    _addGripAction(instance, stealable) {
-        let object = instance.getObject();
-        let action = instance.addGripAction((ownerId) => {
-                let controller = ProjectHandler.getSessionAsset(ownerId);
-                this._attach(instance, controller, stealable);
-            }, (ownerId) => {
-                let controller = ProjectHandler.getSessionAsset(ownerId);
-                this._release(instance, controller, stealable);
-            }
-        );
-        this._actions[instance.getId()] = action;
+    _createGripEventListeners(instance, stealable) {
+        let object = instance.object;
+        let downCallback = (message) => {
+            instance.gripInteractable.capture(message.owner);
+            let controller = ProjectHandler.getSessionAsset(message.owner.id);
+            this._attach(instance, controller, stealable);
+        };
+        let clickCallback = (message) => {
+            let controller = ProjectHandler.getSessionAsset(message.owner.id);
+            this._release(instance, controller, stealable);
+        };
+        this._actions[instance.id] = [downCallback, clickCallback];
+        if(!stealable) this._notStealable.add(instance.id);
     }
 
-    _addPointerAction(instance, stealable) {
-        let avatar = UserController.getAvatar();
-        let action = instance.addPointerAction(() => {
+    _createPointerEventListeners(instance, stealable) {
+        let avatar = UserController.avatar;
+        let clickCallback = (message) => {
             if(instance.parent == avatar) {
                 this._release(instance, avatar, stealable);
             } else {
                 this._attach(instance, avatar, stealable);
             }
-        }, null, 2);
-        this._actions[instance.getId()] = action;
+        };
+        this._actions[instance.id] = [clickCallback];
+        if(!stealable) this._notStealable.add(instance.id);
+    }
+
+    _addEventListeners(instance) {
+        let actions = this._actions[instance.id];
+        if(!actions) return;
+        if(deviceType == 'XR') {
+            instance.gripInteractable.addEventListener('down', actions[0]);
+            instance.gripInteractable.addEventListener('click', actions[1]);
+        } else {
+            instance.pointerInteractable.addEventListener('click', actions[0],
+                { maxDistance: 2 });
+        }
+    }
+
+    _removeEventListeners(instance) {
+        let actions = this._actions[instance.id];
+        if(!actions) return;
+        if(deviceType == 'XR') {
+            instance.gripInteractable.removeEventListener('down', actions[0]);
+            instance.gripInteractable.removeEventListener('click', actions[1]);
+        } else {
+            instance.pointerInteractable.removeEventListener('click',
+                actions[0]);
+        }
     }
 
     _attach(instance, controller, stealable) {
         instance.attachTo(controller);
         if(!stealable) {
             this._publish(OWNED_TOPIC, instance);
-            this._publishForNewPeers[instance.getId()] = () => {
+            this._publishForNewPeers[instance.id] = () => {
                 if(instance.parent == controller)
                     this._publish(OWNED_TOPIC, instance);
             };
-            this._onPartyJoined[instance.getId()] = () => {
+            this._onPartyJoined[instance.id] = () => {
                 instance.attachTo(instance.originalParent);
             };
         }
@@ -144,8 +157,8 @@ export default class GrabbableSystem extends System {
             instance.attachTo(instance.originalParent);
             if(!stealable) {
                 this._publish(RELEASED_TOPIC, instance);
-                delete this._onPartyJoined[instance.getId()];
-                delete this._publishForNewPeers[instance.getId()];
+                delete this._onPartyJoined[instance.id];
+                delete this._publishForNewPeers[instance.id];
             }
         }
     }
@@ -162,38 +175,27 @@ export default class GrabbableSystem extends System {
 
     _handlePeerOwned(peer, message) {
         if(this._actions[message.id]) {
-            this._peerOwned[peer.id] = message.id;
+            if(!this._peerOwned[peer.id]) this._peerOwned[peer.id] = new Set();
+            this._peerOwned[peer.id].add(message.id);
             let instance = ProjectHandler.getSessionAsset(message.id);
-            let action = this._actions[message.id];
-            this._notStealable[message.id] = action;
-            if(deviceType == 'XR') {
-                instance.removeGripAction(action.id);
-            } else {
-                instance.removePointerAction(action.id);
-            }
-            delete this._actions[message.id];
+            if(this._notStealable.has(message.id))
+                this._removeEventListeners(instance);
         }
     }
 
     _handlePeerReleased(peer, message) {
         let instance = ProjectHandler.getSessionAsset(message.id);
-        if(this._notStealable[message.id]) {
-            delete this._peerOwned[peer.id];
-            let action = this._notStealable[message.id];
-            this._actions[message.id] = action;
-            if(deviceType == 'XR') {
-                instance.addGripAction(action);
-            } else {
-                instance.addPointerAction(action);
-            }
-            delete this._notStealable[message.id];
+        if(this._peerOwned[peer.id].has(message.id)) {
+            if(this._notStealable.has(instance.id))
+                this._addEventListeners(instance);
+            this._peerOwned[peer.id].delete(message.id);
         }
     }
 
     _publish(topic, instance) {
         let message = {
             topic: topic,
-            id: instance.getId(),
+            id: instance.id,
         };
         this._publishPeerMessage(message);
     }

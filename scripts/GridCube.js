@@ -1,12 +1,7 @@
-if(!window.DigitalBacon) {
-    console.error('Missing global DigitalBacon reference');
-    throw new Error('Missing global DigitalBacon reference');
-}
-
-const { Assets, EditorHelpers, ProjectHandler, MenuInputs, getCamera, utils } = window.DigitalBacon;
+const { Assets, EditorHelpers, ProjectHandler, getCamera, utils } = window.DigitalBacon;
 const { CustomAssetEntity } = Assets;
 const { CustomAssetEntityHelper, EditorHelperFactory } = EditorHelpers;
-const { ColorInput, NumberInput } = MenuInputs;
+const { ColorField, NumberField } = CustomAssetEntityHelper.FieldTypes;
 const { numberOr } = utils;
 
 import * as THREE from 'three';
@@ -107,65 +102,45 @@ export default class GridCube extends CustomAssetEntity {
         return params;
     }
 
-    getColor() {
-        return this._color;
-    }
+    get color() { return this._color; }
+    get depth() { return this._depth; }
+    get height() { return this._height; }
+    get width() { return this._width; }
+    get depthSegments() { return this._depthSegments; }
+    get heightSegments() { return this._heightSegments; }
+    get widthSegments() { return this._widthSegments; }
 
-    getDepth() {
-        return this._depth;
-    }
-
-    getHeight() {
-        return this._height;
-    }
-
-    getWidth() {
-        return this._width;
-    }
-
-    getDepthSegments() {
-        return this._depthSegments;
-    }
-
-    getHeightSegments() {
-        return this._heightSegments;
-    }
-
-    getWidthSegments() {
-        return this._widthSegments;
-    }
-
-    setColor(color) {
+    set color(color) {
         this._color = color;
         this._mesh.material.color.set(color);
     }
 
-    setDepth(depth) {
+    set depth(depth) {
         this._depth = depth;
         this._updateGeometry();
     }
 
-    setHeight(height) {
+    set height(height) {
         this._height = height;
         this._updateGeometry();
     }
 
-    setWidth(width) {
+    set width(width) {
         this._width = width;
         this._updateGeometry();
     }
 
-    setDepthSegments(depthSegments) {
+    set depthSegments(depthSegments) {
         this._depthSegments = depthSegments;
         this._updateGeometry();
     }
 
-    setHeightSegments(heightSegments) {
+    set heightSegments(heightSegments) {
         this._heightSegments = heightSegments;
         this._updateGeometry();
     }
 
-    setWidthSegments(widthSegments) {
+    set widthSegments(widthSegments) {
         this._widthSegments = widthSegments;
         this._updateGeometry();
     }
@@ -183,23 +158,23 @@ if(EditorHelpers) {
         }
 
         static fields = [
-            { "parameter": "visualEdit" },
-            { "parameter": "color", "name": "Color", "type": ColorInput },
+            "visualEdit",
+            { "parameter": "color", "name": "Color", "type": ColorField },
             { "parameter": "width", "name": "Width", "min": 0,
-                "type": NumberInput },
+                "type": NumberField },
             { "parameter": "height", "name": "Height", "min": 0,
-                "type": NumberInput },
+                "type": NumberField },
             { "parameter": "depth", "name": "Depth", "min": 0,
-                "type": NumberInput },
+                "type": NumberField },
             { "parameter": "widthSegments", "name": "Width Segments", "min": 1,
-                "type": NumberInput },
+                "type": NumberField },
             { "parameter": "heightSegments", "name": "Height Segments", "min":1,
-                "type": NumberInput },
+                "type": NumberField },
             { "parameter": "depthSegments", "name": "Depth Segments", "min": 1,
-                "type": NumberInput },
-            { "parameter": "position" },
-            { "parameter": "rotation" },
-            { "parameter": "scale" },
+                "type": NumberField },
+            "position",
+            "rotation",
+            "scale",
         ];
     }
 
