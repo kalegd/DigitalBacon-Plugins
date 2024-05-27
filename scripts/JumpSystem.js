@@ -6,10 +6,11 @@
 
 import * as THREE from 'three';
 
-const { Assets, EditorHelpers, InputHandler, ProjectHandler, PubSub, SettingsHandler, UserController, getDeviceType, isEditor, utils } = window.DigitalBacon;
+const { Assets, DigitalBaconUI, EditorHelpers, ProjectHandler, PubSub, SettingsHandler, UserController, getDeviceType, isEditor, utils } = window.DigitalBacon;
 const { System } = Assets;
 const { SystemHelper, EditorHelperFactory } = EditorHelpers;
 const { NumberField } = SystemHelper.FieldTypes;
+const { InputHandler } = DigitalBaconUI;
 const { numberOr } = utils;
 const deviceType = getDeviceType();
 
@@ -204,14 +205,13 @@ export default class JumpSystem extends System {
         this._fall(timeDelta, jumpingDetails);
     }
 
-    addToScene() {
-        super.addToScene();
-        if(!isEditor())
-            this._addSubscriptions();
+    onAddToProject() {
+        super.onAddToProject();
+        if(!isEditor()) this._addSubscriptions();
     }
 
-    removeFromScene() {
-        super.removeFromScene();
+    onRemoveFromProject() {
+        super.onRemoveFromProject();
         if(!isEditor() && deviceType == 'MOBILE')
             InputHandler.hideExtraControlsButton('jump-button-' + this._id);
     }
