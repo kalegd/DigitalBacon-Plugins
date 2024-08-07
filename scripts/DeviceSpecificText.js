@@ -158,12 +158,12 @@ export default class DeviceSpecificText extends Assets.CustomAssetEntity {
 
     set height(height) {
         this._height = height;
-        this._block.set({ height: height });
+        this._block.height = height;
     }
 
     set width(width) {
         this._width = width;
-        this._block.set({ width: width });
+        this._block.width = width;
         this._textComponent.maxWidth = width;
     }
 
