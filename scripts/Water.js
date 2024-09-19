@@ -604,6 +604,10 @@ class Water extends Mesh {
 
 		this.type = 'Water';
 
+        //Temporary fix until VR Hardware doesn't suck so much
+        this.firstRenderOfFrame = true;
+        //End temporary fix
+
 		const scope = this;
 
 		const color = ( options.color !== undefined ) ? new Color( options.color ) : new Color( 0xFFFFFF );
@@ -757,6 +761,17 @@ class Water extends Mesh {
 		//
 
 		this.onBeforeRender = function ( renderer, scene, camera ) {
+
+            let xrSession = renderer.xr?.getSession?.();
+            if(xrSession) {
+                if(!renderer.xr.getCamera().cameras.includes(camera)) return;
+            } else if(camera != getCamera()) {
+                return;
+            }
+            //Temporary fix until VR Hardware doesn't suck so much
+            if(!scope.firstRenderOfFrame) return;
+            scope.firstRenderOfFrame = false;
+            //End temporary fix
 
 			updateTextureMatrix( camera );
 			updateFlow();
@@ -963,6 +978,14 @@ export default class WaterAsset extends CustomAssetEntity {
             scale: this._waterScale,
         });
         this._object.add(this._mesh);
+        this._configureMesh();
+    }
+
+    _configureMesh() {
+        if(this._mesh) this._mesh.renderOrder = this._renderOrder;
+        this._mesh.traverse((node) => {
+            if(node instanceof THREE.Mesh) node.renderOrder =this._renderOrder;;
+        });
     }
 
     _getDefaultName() {
@@ -1024,6 +1047,12 @@ export default class WaterAsset extends CustomAssetEntity {
         this._updateGeometry(this._height, this._width);
     }
 
+    //Temporary fix until VR Hardware doesn't suck so much
+    update() {
+        this._mesh.firstRenderOfFrame = true;
+    }
+    //End temporary fix
+
     static assetId = 'b02d649a-b6ec-454b-8e8f-8561f0dadebc';
     static assetName = 'Water';
 }
@@ -1068,6 +1097,7 @@ if(EditorHelpers) {
             "position",
             "rotation",
             "scale",
+            "renderOrder",
         ];
     }
 

@@ -5,14 +5,14 @@
  */
 
 const { Assets, DigitalBaconUI, EditorHelpers, ProjectHandler, getCamera, getDeviceType, utils } = window.DigitalBacon;
-const { CustomAssetEntityHelper, EditorHelperFactory } = EditorHelpers;
-const { ColorField, EnumField, NumberField, TextField } = CustomAssetEntityHelper.FieldTypes;
+const { TextAssetHelper, EditorHelperFactory } = EditorHelpers;
+const { ColorField, EnumField, NumberField, TextField } = TextAssetHelper.FieldTypes;
 const { numberOr } = utils;
 const deviceType = getDeviceType();
 
 import * as THREE from 'three';
 
-export default class DeviceSpecificText extends Assets.CustomAssetEntity {
+export default class DeviceSpecificText extends Assets.TextAsset {
     constructor(params = {}) {
         params['assetId'] = DeviceSpecificText.assetId;
         super(params);
@@ -21,12 +21,8 @@ export default class DeviceSpecificText extends Assets.CustomAssetEntity {
         this._backgroundOpacity = numberOr(params['backgroundOpacity'], 1);
         this._borderRadius = numberOr(params['borderRadius'], 0.1);
         this._deviceType = deviceType;
-        this._fontColor = new THREE.Color(
-            numberOr(params['fontColor'], 0xffffff));
-        this._fontSize = numberOr(params['fontSize'], 0.1);
         this._justifyContent = params['justifyContent'] || 'center';
         this._padding = numberOr(params['padding'], 0);
-        this._textAlign = params['textAlign'] || 'left';
         this._pointerText = params['pointerText'] || 'Hi Computer';
         this._touchScreenText = params['touchScreenText'] || 'Hi Touch Screen';
         this._xrText = params['xrText'] || 'Hi XR';
@@ -54,6 +50,12 @@ export default class DeviceSpecificText extends Assets.CustomAssetEntity {
         });
         this._block.add(this._textComponent);
         this._object.add(this._block);
+        this._configureMesh();
+    }
+
+    _configureMesh() {
+        if(this._block)
+            this._block._updateMaterialOffset(this._renderOrder - 1);
     }
 
     _getDefaultName() {
@@ -75,12 +77,9 @@ export default class DeviceSpecificText extends Assets.CustomAssetEntity {
         params['backgroundColor'] = this._backgroundColor.getHex();
         params['backgroundOpacity'] = this._backgroundOpacity;
         params['borderRadius'] = this._borderRadius;
-        params['fontColor'] = this._fontColor.getHex();
-        params['fontSize'] = this._fontSize;
         params['height'] = this._height;
         params['justifyContent'] = this._justifyContent;
         params['padding'] = this._padding;
-        params['textAlign'] = this._textAlign;
         params['pointerText'] = this._pointerText;
         params['touchScreenText'] = this._touchScreenText;
         params['xrText'] = this._xrText;
@@ -91,11 +90,8 @@ export default class DeviceSpecificText extends Assets.CustomAssetEntity {
     get backgroundColor() { return this._backgroundColor.getHex(); }
     get backgroundOpacity() { return this._backgroundOpacity; }
     get borderRadius() { return this._borderRadius; }
-    get fontColor() { return this._fontColor.getHex(); }
-    get fontSize() { return this._fontSize; }
     get justifyContent() { return this._justifyContent; }
     get padding() { return this._padding; }
-    get textAlign() { return this._textAlign; }
     get touchScreenText() { return this._touchScreenText; }
     get pointerText() { return this._pointerText; }
     get xrText() { return this._xrText; }
@@ -117,16 +113,6 @@ export default class DeviceSpecificText extends Assets.CustomAssetEntity {
         this._block.borderRadius = borderRadius;
     }
 
-    set fontColor(fontColor) {
-        this._fontColor.set(fontColor);
-        this._textComponent.color = this._fontColor;
-    }
-
-    set fontSize(fontSize) {
-        this._fontSize = fontSize;
-        this._textComponent.fontSize = fontSize;
-    }
-
     set justifyContent(justifyContent) {
         this._justifyContent = justifyContent;
         this._block.justifyContent = justifyContent;
@@ -137,10 +123,6 @@ export default class DeviceSpecificText extends Assets.CustomAssetEntity {
         this._block.padding = padding;
     }
 
-    set textAlign(textAlign) {
-        this._textAlign = textAlign;
-        this._textComponent.textAlign = textAlign;
-    }
     set touchScreenText(text) {
         this._touchScreenText = text;
         if(this._deviceType == 'TOUCH_SCREEN') this._textComponent.text = text;
@@ -174,27 +156,11 @@ export default class DeviceSpecificText extends Assets.CustomAssetEntity {
 ProjectHandler.registerAsset(DeviceSpecificText);
 
 if(EditorHelpers) {
-    class DeviceSpecificTextHelper extends CustomAssetEntityHelper {
+    class DeviceSpecificTextHelper extends TextAssetHelper {
         constructor(asset) {
             super(asset);
             this._previewDevice = deviceType;
             this._createPreviewFunctions();
-        }
-
-        place(intersection) {
-            let vector3 = new THREE.Vector3();
-            let { object, point } = intersection;
-            object.updateMatrixWorld();
-            let normal = intersection.face.normal.clone()
-                .transformDirection(object.matrixWorld).clampLength(0, 0.001);
-            if(getCamera().getWorldDirection(vector3).dot(normal) > 0)
-                normal.negate();
-            point.add(normal);
-            this._object.position.copy(point);
-            this._object.parent.worldToLocal(this._object.position);
-            point.add(normal);
-            this._object.lookAt(point);
-            this.roundAttributes(true);
         }
 
         _createPreviewFunctions() {
@@ -219,14 +185,12 @@ if(EditorHelpers) {
             { "parameter": "previewDevice", "name": "Preview Device",
                 "map": {"Computer":"POINTER","Touch Screen":"TOUCH_SCREEN","XR":"XR"},
                 "type": EnumField },
-            { "parameter": "fontSize", "name": "Font Size", "min": 0,
-                "type": NumberField },
+            "fontSize",
             { "parameter": "width", "name": "Width", "min": 0.000001,
                 "type": NumberField },
             { "parameter": "height", "name": "Height", "min": 0.000001,
                 "type": NumberField },
-            { "parameter": "fontColor", "name": "Font Color",
-                "type": ColorField },
+            "fontColor",
             { "parameter": "backgroundColor", "name": "Background Color",
                 "type": ColorField },
             { "parameter": "backgroundOpacity", "name": "Background Opacity",
@@ -238,12 +202,11 @@ if(EditorHelpers) {
             { "parameter": "justifyContent", "name": "Justify Content",
                 "map": { "Start": "start", "Center": "center", "End": "end" },
                 "type": EnumField },
-            { "parameter": "textAlign", "name": "Text Alignment",
-                "map": { "Left": "left", "Center": "center", "Right": "right" },
-                "type": EnumField },
+            "textAlign",
             "position",
             "rotation",
             "scale",
+            "renderOrder",
         ];
     }
 

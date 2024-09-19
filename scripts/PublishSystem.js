@@ -31,27 +31,44 @@ export default class PublishSystem extends System {
             if(this._actions[id]) return;
             let instance = ProjectHandler.getSessionAsset(message.id);
             let component = ProjectHandler.getSessionAsset(message.componentId);
-            this._addPointerAction(id, instance, component.topic);
+            let callback = () => {
+                PubSub.publish(this._id, component.topic, {
+                    asset: instance, userController: UserController,
+                });
+                this._publish(component.topic, instance.id);
+            };
+            if(component.pointerEvent != 'none')
+                instance.pointerInteractable.addEventListener(
+                    component.pointerEvent, callback);
+            if(component.gripEvent != 'none')
+                instance.gripInteractable.addEventListener(
+                    component.gripEvent, callback);
+            if(component.touchEvent != 'none')
+                instance.touchInteractable.addEventListener(
+                    component.touchEvent, callback);
+            this._actions[id] = {
+                callback: callback,
+                pointerEvent: component.pointerEvent,
+                gripEvent: component.gripEvent,
+                touchEvent: component.touchEvent,
+            };
         });
         this._listenForComponentDetached(COMPONENT_ASSET_ID, (message) => {
             let id = message.id + ':' + message.componentId;
             let action = this._actions[id];
             if(!action) return;
             let instance = ProjectHandler.getSessionAsset(message.id);
-            instance.pointerInteractable.removeEventListener('click', action);
+            if(action.pointerEvent != 'none')
+                instance.pointerInteractable.removeEventListener(
+                    action.pointerEvent, action.callback);
+            if(action.gripEvent != 'none')
+                instance.gripInteractable.removeEventListener(
+                    action.gripEvent, action.callback);
+            if(action.touchEvent != 'none')
+                instance.touchInteractable.removeEventListener(
+                    action.touchEvent, action.callback);
             delete this._actions[id];
         });
-    }
-
-    _addPointerAction(id, instance, topic) {
-        let callback = () => {
-            PubSub.publish(this._id, topic, {
-                asset: instance, userController: UserController,
-            });
-            this._publish(topic, instance.id);
-        };
-        instance.pointerInteractable.addEventListener('click', callback);
-        this._actions[id] = callback;
     }
 
     _onPeerMessage(peer, message) {
