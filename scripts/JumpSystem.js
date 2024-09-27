@@ -4,9 +4,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-import * as THREE from 'three';
-
-const { Assets, DigitalBaconUI, EditorHelpers, ProjectHandler, PubSub, SettingsHandler, UserController, getDeviceType, isEditor, utils } = window.DigitalBacon;
+const { Assets, DigitalBaconUI, EditorHelpers, ProjectHandler, PubSub, SettingsHandler, THREE, UserController, getDeviceType, isEditor, utils } = window.DigitalBacon;
 const { System } = Assets;
 const { SystemHelper, EditorHelperFactory } = EditorHelpers;
 const { NumberField } = SystemHelper.FieldTypes;

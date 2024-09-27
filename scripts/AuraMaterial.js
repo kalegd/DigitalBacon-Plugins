@@ -4,11 +4,10 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-const { Assets, EditorHelpers, ProjectHandler, utils } = window.DigitalBacon;
+const { Assets, EditorHelpers, ProjectHandler, THREE, utils } = window.DigitalBacon;
 const { Material } = Assets;
 const { MaterialHelper, EditorHelperFactory } = EditorHelpers;
 const { numberOr } = utils;
-import * as THREE from 'three';
 
 export default class AuraMaterial extends Material {
     constructor(params = {}) {

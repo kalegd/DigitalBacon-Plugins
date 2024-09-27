@@ -4,14 +4,11 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-const { Assets, AudioHandler, EditorHelpers, LibraryHandler, PartyHandler, ProjectHandler, PubSub, isEditor, utils } = window.DigitalBacon;
+const { Assets, AudioHandler, EditorHelpers, LibraryHandler, PartyHandler, ProjectHandler, PubSub, THREE, isEditor, utils } = window.DigitalBacon;
 const { CustomAsset } = Assets;
 const { CustomAssetHelper, EditorHelperFactory } = EditorHelpers;
 const { AudioField, CheckboxField, NumberField, TextField } = CustomAssetHelper.FieldTypes;
 const { numberOr } = utils;
-
-
-import * as THREE from 'three';
 
 export default class GlobalAudio extends CustomAsset {
     constructor(params = {}) {

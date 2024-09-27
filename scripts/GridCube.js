@@ -1,11 +1,10 @@
-const { Assets, EditorHelpers, ProjectHandler, getCamera, utils } = window.DigitalBacon;
+const { Assets, EditorHelpers, ProjectHandler, THREE, getCamera, utils } = window.DigitalBacon;
 const { CustomAssetEntity } = Assets;
 const { CustomAssetEntityHelper, EditorHelperFactory } = EditorHelpers;
 const { ColorField, NumberField } = CustomAssetEntityHelper.FieldTypes;
 const { numberOr } = utils;
 
-import * as THREE from 'three';
-import { BufferGeometry, Float32BufferAttribute } from 'three';
+const { BufferGeometry, Float32BufferAttribute } = THREE;
 
 //BoxLineGeometry from https://github.com/mrdoob/three.js/blob/dev/examples/jsm/geometries/BoxLineGeometry.js
 

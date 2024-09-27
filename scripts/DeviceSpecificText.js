@@ -4,13 +4,11 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-const { Assets, DigitalBaconUI, EditorHelpers, ProjectHandler, getCamera, getDeviceType, utils } = window.DigitalBacon;
+const { Assets, DigitalBaconUI, EditorHelpers, ProjectHandler, THREE, getCamera, getDeviceType, utils } = window.DigitalBacon;
 const { TextAssetHelper, EditorHelperFactory } = EditorHelpers;
 const { ColorField, EnumField, NumberField, TextField } = TextAssetHelper.FieldTypes;
 const { numberOr } = utils;
 const deviceType = getDeviceType();
-
-import * as THREE from 'three';
 
 export default class DeviceSpecificText extends Assets.TextAsset {
     constructor(params = {}) {

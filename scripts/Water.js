@@ -1,12 +1,10 @@
-const { Assets, EditorHelpers, ProjectHandler, getCamera, utils } = window.DigitalBacon;
+const { Assets, EditorHelpers, ProjectHandler, THREE, getCamera, utils } = window.DigitalBacon;
 const { CustomAssetEntity } = Assets;
 const { CustomAssetEntityHelper, EditorHelperFactory } = EditorHelpers;
 const { ColorField, NumberField, Vector2Field } = CustomAssetEntityHelper.FieldTypes;
 const { numberOr } = utils;
 
-import * as THREE from 'three';
-
-import {
+const {
     Clock,
 	Color,
 	Matrix4,
@@ -24,7 +22,7 @@ import {
 	Vector4,
 	WebGLRenderTarget,
 	HalfFloatType
-} from 'three';
+} = THREE;
 
 const Water_1_M_Normal = 'https://cdn.jsdelivr.net/npm/digitalbacon-plugins@0.1.1/textures/Water_1_M_Normal.jpg';
 const Water_2_M_Normal = 'https://cdn.jsdelivr.net/npm/digitalbacon-plugins@0.1.1/textures/Water_2_M_Normal.jpg';
