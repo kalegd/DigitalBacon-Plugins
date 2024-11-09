@@ -27,6 +27,8 @@ const {
 const Water_1_M_Normal = 'https://cdn.jsdelivr.net/npm/digitalbacon-plugins@0.1.1/textures/Water_1_M_Normal.jpg';
 const Water_2_M_Normal = 'https://cdn.jsdelivr.net/npm/digitalbacon-plugins@0.1.1/textures/Water_2_M_Normal.jpg';
 
+var skippedCameras = new Set();
+
 class Reflector extends Mesh {
 
 	constructor( geometry, options = {} ) {
@@ -37,6 +39,7 @@ class Reflector extends Mesh {
 
 		this.type = 'Reflector';
 		this.camera = new PerspectiveCamera();
+        skippedCameras.add(this.camera);
 
 		const scope = this;
 
@@ -287,6 +290,7 @@ class Refractor extends Mesh {
 
 		this.type = 'Refractor';
 		this.camera = new PerspectiveCamera();
+        skippedCameras.add(this.camera);
 
 		const scope = this;
 
@@ -760,15 +764,13 @@ class Water extends Mesh {
 
 		this.onBeforeRender = function ( renderer, scene, camera ) {
 
-            let xrSession = renderer.xr?.getSession?.();
-            if(xrSession) {
-                if(!renderer.xr.getCamera().cameras.includes(camera)) return;
-            } else if(camera != getCamera()) {
-                return;
-            }
+            if(skippedCameras.has(camera)) return;
             //Temporary fix until VR Hardware doesn't suck so much
-            if(!scope.firstRenderOfFrame) return;
-            scope.firstRenderOfFrame = false;
+            let xrSession = renderer.xr?.getSession?.();
+            if(xrSession && renderer.xr.getCamera().cameras.includes(camera)) {
+                if(!scope.firstRenderOfFrame) return;
+                scope.firstRenderOfFrame = false;
+            }
             //End temporary fix
 
 			updateTextureMatrix( camera );
